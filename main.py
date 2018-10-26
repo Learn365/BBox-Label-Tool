@@ -7,8 +7,8 @@
 #
 #-------------------------------------------------------------------------------
 from __future__ import division
-from Tkinter import *
-import tkMessageBox
+from tkinter import *
+# import tkMessageBox
 from PIL import Image, ImageTk
 import os
 import glob
@@ -125,15 +125,15 @@ class LabelTool():
             self.parent.focus()
             self.category = int(s)
         else:
-            s = r'D:\workspace\python\labelGUI'
+            s = r'D:\Working\Projects\yolo\words'
 ##        if not os.path.isdir(s):
-##            tkMessageBox.showerror("Error!", message = "The specified dir doesn't exist!")
+##            tkinter.messagebox.showerror("Error!", message = "The specified dir doesn't exist!")
 ##            return
         # get image list
         self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
         self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPEG'))
         if len(self.imageList) == 0:
-            print 'No .JPEG images found in the specified dir!'
+            print ('No .JPEG images found in the specified dir!')
             return
 
         # default to the 1st image in the collection
@@ -164,7 +164,7 @@ class LabelTool():
             self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
 
         self.loadImage()
-        print '%d images loaded from %s' %(self.total, s)
+        print ('{0} images loaded from {1}'.format(self.total, s))
 
     def loadImage(self):
         # load image
@@ -203,7 +203,7 @@ class LabelTool():
             f.write('%d\n' %len(self.bboxList))
             for bbox in self.bboxList:
                 f.write(' '.join(map(str, bbox)) + '\n')
-        print 'Image No. %d saved' %(self.cur)
+        print ('Image No. {0} saved'.format(self.cur))
 
 
     def mouseClick(self, event):
