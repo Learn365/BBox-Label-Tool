@@ -120,17 +120,18 @@ class LabelTool():
 ##        self.loadDir()
 
     def loadDir(self, dbg = False):
-        if not dbg:
-            s = self.entry.get()
-            self.parent.focus()
-            self.category = int(s)
-        else:
-            s = r'D:\Working\Projects\yolo\words'
+        s = self.entry.get()
+        self.parent.focus()
+        self.category = int(s)
+        # if not dbg:
+        # else:
+        #     s = r'D:\Working\Projects\yolo\words'
 ##        if not os.path.isdir(s):
 ##            tkinter.messagebox.showerror("Error!", message = "The specified dir doesn't exist!")
 ##            return
+        wf=r'D:\Working\Projects\yolo\words'
         # get image list
-        self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
+        self.imageDir = os.path.join(wf,r'./Images', '%03d' %(self.category))
         self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPEG'))
         if len(self.imageList) == 0:
             print ('No .JPEG images found in the specified dir!')
@@ -141,7 +142,7 @@ class LabelTool():
         self.total = len(self.imageList)
 
          # set up output dir
-        self.outDir = os.path.join(r'./Labels', '%03d' %(self.category))
+        self.outDir = os.path.join(wf,r'./Labels', '%03d' %(self.category))
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
