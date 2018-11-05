@@ -2,9 +2,9 @@ import glob, os
 
 # Current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
+current_dir = os.path.join(current_dir,'nlut')
 # Directory where the data will reside, relative to 'darknet.exe'
-path_data = 'data/demo/'
+path_data = './data/nlut/'
 
 # Percentage of images to be used for the test set
 percentage_test = 10;
