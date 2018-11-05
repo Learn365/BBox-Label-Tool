@@ -120,19 +120,19 @@ class LabelTool():
 ##        self.loadDir()
 
     def loadDir(self, dbg = False):
-        s = self.entry.get()
-        self.parent.focus()
-        self.category = int(s)
-        # if not dbg:
-        # else:
-        #     s = r'D:\Working\Projects\yolo\words'
-##        if not os.path.isdir(s):
-##            tkinter.messagebox.showerror("Error!", message = "The specified dir doesn't exist!")
-##            return
-        wf=r'D:\Working\Projects\yolo\words'
+        if not dbg:
+            s = self.entry.get()
+            self.parent.focus()
+            self.category = int(s)
+        else:
+            s = r'D:\Working\Projects\yolo\words'
+            if not os.path.isdir(s):
+                tkinter.messagebox.showerror("Error!", message = "The specified dir doesn't exist!")
+                return
         # get image list
-        self.imageDir = os.path.join(wf,r'./Images', '%03d' %(self.category))
-        self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPEG'))
+        self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
+        print(self.imageDir)
+        self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPG'))
         if len(self.imageList) == 0:
             print ('No .JPEG images found in the specified dir!')
             return
@@ -140,14 +140,16 @@ class LabelTool():
         # default to the 1st image in the collection
         self.cur = 1
         self.total = len(self.imageList)
+        print(self.total)
 
          # set up output dir
-        self.outDir = os.path.join(wf,r'./Labels', '%03d' %(self.category))
+        self.outDir = os.path.join(r'./Labels', '%03d' %(self.category))
+        print(self.outDir)
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
         # load example bboxes
-        self.egDir = os.path.join(r'./Examples', '%03d' %(self.category))
+        self.egDir = os.path.join(r'./Examples', '%03d' %(1))
         if not os.path.exists(self.egDir):
             return
         filelist = glob.glob(os.path.join(self.egDir, '*.JPEG'))
