@@ -10,7 +10,7 @@ import os
 from os import walk, getcwd
 from PIL import Image
 
-classes = ["stopsign"]
+classes = ["001","002","003","004","005"]
 
 def convert(size, box):
     dw = 1./size[0]
@@ -29,14 +29,13 @@ def convert(size, box):
 """-------------------------------------------------------------------""" 
 
 """ Configure Paths"""   
-mypath = "labels/stopsign_original/"
-outpath = "labels/stopsign/"
+mypath = "./Labels/005/"
+outpath = "nlut"
 
-cls = "stopsign"
+cls = "005"
 if cls not in classes:
     exit(0)
 cls_id = classes.index(cls)
-
 wd = getcwd()
 list_file = open('%s/%s_list.txt'%(wd, cls), 'w')
 
@@ -58,7 +57,7 @@ for txt_name in txt_name_list:
     lines = txt_file.read().split('\r\n')   #for ubuntu, use "\r\n" instead of "\n"
     
     """ Open output text files """
-    txt_outpath = outpath + txt_name
+    txt_outpath = os.path.join(wd,outpath,txt_name)
     print("Output:" + txt_outpath)
     txt_outfile = open(txt_outpath, "w")
     
@@ -71,15 +70,16 @@ for txt_name in txt_name_list:
         #print('\n')
         if(len(line) >= 2):
             ct = ct + 1
-            print(line + "\n")
-            elems = line.split(' ')
+            print(line)
+            elems = line.split('\n')[1].split(' ')
             print(elems)
             xmin = elems[0]
             xmax = elems[2]
             ymin = elems[1]
             ymax = elems[3]
             #
-            img_path = str('%s/images/%s/%s.JPEG'%(wd, cls, os.path.splitext(txt_name)[0]))
+            img_path = str('%s/images/%s/%s.JPG'%(wd, cls, os.path.splitext(txt_name)[0]))
+            print(img_path)
             #t = magic.from_file(img_path)
             #wh= re.search('(\d+) x (\d+)', t).groups()
             im=Image.open(img_path)
@@ -96,6 +96,6 @@ for txt_name in txt_name_list:
 
     """ Save those images with bb into list"""
     if(ct != 0):
-        list_file.write('%s/images/%s/%s.JPEG\n'%(wd, cls, os.path.splitext(txt_name)[0]))
+        list_file.write('%s/images/%s/%s.JPG\n'%(wd, cls, os.path.splitext(txt_name)[0]))
                 
 list_file.close()
