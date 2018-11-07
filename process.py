@@ -5,7 +5,7 @@ import io
 current_dir = os.path.dirname(os.path.abspath(__file__))
 obj='nlut_1'
 cls='001'
-current_dir = os.path.join(current_dir,obj,'images',cls)
+img_path = os.path.join(current_dir,obj,'images',cls)
 # Directory where the data will reside, relative to 'darknet.exe'
 path_data = './data/{0}/images/{1}/'.format(obj,cls)
 
@@ -13,13 +13,13 @@ path_data = './data/{0}/images/{1}/'.format(obj,cls)
 percentage_test = 10;
 
 # Create and/or truncate train.txt and test.txt
-file_train = io.open('{0}_train.txt'.format(obj), 'a+',newline="\n")  
-file_test = io.open('{0}_test.txt'.format(obj), 'a+',newline="\n")
+file_train = io.open(os.path.join(current_dir,obj,'{0}_train.txt'.format(obj)), 'a+',newline="\n")  
+file_test = io.open(os.path.join(current_dir,obj,'{0}_test.txt'.format(obj)), 'a+',newline="\n")
 
 # Populate train.txt and test.txt
 counter = 1  
 index_test = round(100 / percentage_test)  
-for pathAndFilename in glob.iglob(os.path.join(current_dir, "*.jpg")):  
+for pathAndFilename in glob.iglob(os.path.join(img_path, "*.jpg")):  
     title, ext = os.path.splitext(os.path.basename(pathAndFilename))
 
     if counter == index_test:
