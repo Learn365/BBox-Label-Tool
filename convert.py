@@ -29,10 +29,10 @@ def convert(size, box):
 """-------------------------------------------------------------------""" 
 
 """ Configure Paths"""   
-mypath = "./Labels/005/"
+mypath = "./Labels/001/"
 outpath = "nlut"
 
-cls = "005"
+cls = "001"
 if cls not in classes:
     exit(0)
 cls_id = classes.index(cls)
