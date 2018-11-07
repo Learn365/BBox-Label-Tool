@@ -1,17 +1,20 @@
 import glob, os
+import io
 
 # Current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-current_dir = os.path.join(current_dir,'nlut')
+obj='nlut_1'
+cls='001'
+current_dir = os.path.join(current_dir,obj,'images',cls)
 # Directory where the data will reside, relative to 'darknet.exe'
-path_data = './data/nlut/'
+path_data = './data/{0}/images/{1}/'.format(obj,cls)
 
 # Percentage of images to be used for the test set
 percentage_test = 10;
 
 # Create and/or truncate train.txt and test.txt
-file_train = open('train.txt', 'w')  
-file_test = open('test.txt', 'w')
+file_train = io.open('{0}_train.txt'.format(obj), 'a+',newline="\n")  
+file_test = io.open('{0}_test.txt'.format(obj), 'a+',newline="\n")
 
 # Populate train.txt and test.txt
 counter = 1  

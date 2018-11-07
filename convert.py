@@ -7,6 +7,8 @@ Email: gnxr9@mail.missouri.edu
 """
 
 import os
+import io
+from shutil import copyfile
 from os import walk, getcwd
 from PIL import Image
 
@@ -28,16 +30,17 @@ def convert(size, box):
     
 """-------------------------------------------------------------------""" 
 
-""" Configure Paths"""   
-mypath = "./Labels/001/"
-outpath = "nlut"
-
+""" Configure Paths"""
+obj='nlut_1'
 cls = "001"
+wd = getcwd()
+mypath = os.path.join(wd,"Labels",cls)
+outpath = os.path.join(wd,obj,"labels",cls)
+
 if cls not in classes:
     exit(0)
 cls_id = classes.index(cls)
-wd = getcwd()
-list_file = open('%s/%s_list.txt'%(wd, cls), 'w')
+list_file = io.open('%s/%s_list.txt'%(wd, cls), 'w',newline='\n')
 
 """ Get input text file list """
 txt_name_list = []
@@ -48,18 +51,20 @@ print(txt_name_list)
 
 """ Process """
 for txt_name in txt_name_list:
-    # txt_file =  open("Labels/stop_sign/001.txt", "r")
+    # txt_file =  o.open("Labels/stop_sign/001.txt", "r")
     
     """ Open input text files """
-    txt_path = mypath + txt_name
+    txt_path = os.path.join(mypath,txt_name)
     print("Input:" + txt_path)
     txt_file = open(txt_path, "r")
     lines = txt_file.read().split('\r\n')   #for ubuntu, use "\r\n" instead of "\n"
     
     """ Open output text files """
-    txt_outpath = os.path.join(wd,outpath,txt_name)
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+    txt_outpath = os.path.join(outpath,txt_name)
     print("Output:" + txt_outpath)
-    txt_outfile = open(txt_outpath, "w")
+    txt_outfile = io.open(txt_outpath, "w",newline='\n')
     
     
     """ Convert the data to YOLO format """
@@ -93,6 +98,12 @@ for txt_name in txt_name_list:
             bb = convert((w,h), b)
             print(bb)
             txt_outfile.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+            new_img_path = os.path.join(wd,obj,"images",cls)
+            if not os.path.exists(new_img_path):
+                os.makedirs(new_img_path)
+            new_img_path = os.path.join(new_img_path,"{0}.jpg".format(os.path.splitext(txt_name)[0]))
+            copyfile(img_path, new_img_path)
+
 
     """ Save those images with bb into list"""
     if(ct != 0):
