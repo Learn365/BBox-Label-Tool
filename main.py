@@ -72,6 +72,12 @@ class LabelTool():
         self.parent.bind("d", self.nextImage) # press 'd' to go forward
         self.mainPanel.grid(row = 1, column = 1, rowspan = 4, sticky = W+N)
 
+        # scrollbar
+        #self.vsb = Scrollbar(self.frame, orient="vertical", command=self.mainPanel.yview)
+        #self.vsb.grid(row=1, column=1, sticky='ns')
+        #self.mainPanel.configure(yscrollcommand=self.vsb.set)
+        #self.mainPanel.config(scrollregion=self.mainPanel.bbox("all"))
+
         # showing bbox info & delete bbox
         self.lb1 = Label(self.frame, text = 'Bounding boxes:')
         self.lb1.grid(row = 1, column = 2,  sticky = W+N)
@@ -81,6 +87,7 @@ class LabelTool():
         self.btnDel.grid(row = 3, column = 2, sticky = W+E+N)
         self.btnClear = Button(self.frame, text = 'ClearAll', command = self.clearBBox)
         self.btnClear.grid(row = 4, column = 2, sticky = W+E+N)
+
 
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
@@ -148,23 +155,23 @@ class LabelTool():
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
-        # load example bboxes
-        self.egDir = os.path.join(r'./Examples', '%03d' %(1))
-        if not os.path.exists(self.egDir):
-            return
-        filelist = glob.glob(os.path.join(self.egDir, '*.JPEG'))
-        self.tmp = []
-        self.egList = []
-        random.shuffle(filelist)
-        for (i, f) in enumerate(filelist):
-            if i == 3:
-                break
-            im = Image.open(f)
-            r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
-            new_size = int(r * im.size[0]), int(r * im.size[1])
-            self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
-            self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
-            self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
+        # # load example bboxes
+        # self.egDir = os.path.join(r'./Examples', '%03d' %(1))
+        # if not os.path.exists(self.egDir):
+        #     return
+        # filelist = glob.glob(os.path.join(self.egDir, '*.JPEG'))
+        # self.tmp = []
+        # self.egList = []
+        # random.shuffle(filelist)
+        # for (i, f) in enumerate(filelist):
+        #     if i == 3:
+        #         break
+        #     im = Image.open(f)
+        #     r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
+        #     new_size = int(r * im.size[0]), int(r * im.size[1])
+        #     self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
+        #     self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
+        #     self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
 
         self.loadImage()
         print ('{0} images loaded from {1}'.format(self.total, s))
