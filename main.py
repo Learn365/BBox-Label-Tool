@@ -14,6 +14,7 @@ import os
 import glob
 import random
 
+from xml_utils import createXMLAnnotation
 # colors for the bboxes
 COLORS = ['red', 'blue', 'yellow', 'pink', 'cyan', 'green', 'black']
 # image sizes for the examples
@@ -34,12 +35,17 @@ class LabelTool():
         self.egDir = ''
         self.egList = []
         self.outDir = ''
+        self.xmlDir = ''
         self.cur = 0
         self.total = 0
         self.category = 0
+        self.imagepath = ''
         self.imagename = ''
         self.labelfilename = ''
+        self.xmlfilename = ''
         self.tkimg = None
+        self.numbers = False
+        self.boxcount = 0
 
         # initialize mouse state
         self.STATE = {}
@@ -50,6 +56,7 @@ class LabelTool():
         self.bboxIdList = []
         self.bboxId = None
         self.bboxList = []
+        self.bboxNumberList = []
         self.hl = None
         self.vl = None
 
@@ -70,7 +77,7 @@ class LabelTool():
         self.parent.bind("s", self.cancelBBox)
         self.parent.bind("a", self.prevImage) # press 'a' to go backforward
         self.parent.bind("d", self.nextImage) # press 'd' to go forward
-        self.mainPanel.grid(row = 1, column = 1, rowspan = 4, sticky = W+N)
+        self.mainPanel.grid(row = 1, column = 1, rowspan = 5, sticky = W+N)
 
         # showing bbox info & delete bbox
         self.lb1 = Label(self.frame, text = 'Bounding boxes:')
@@ -81,10 +88,12 @@ class LabelTool():
         self.btnDel.grid(row = 3, column = 2, sticky = W+E+N)
         self.btnClear = Button(self.frame, text = 'ClearAll', command = self.clearBBox)
         self.btnClear.grid(row = 4, column = 2, sticky = W+E+N)
+        self.btnNumbers = Button(self.frame, text = 'Toggle Numbers', command = self.toggleNumbers)
+        self.btnNumbers.grid(row = 5, column = 2, sticky = W+E+N)
 
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
-        self.ctrPanel.grid(row = 5, column = 1, columnspan = 2, sticky = W+E)
+        self.ctrPanel.grid(row = 6, column = 1, columnspan = 2, sticky = W+E)
         self.prevBtn = Button(self.ctrPanel, text='<< Prev', width = 10, command = self.prevImage)
         self.prevBtn.pack(side = LEFT, padx = 5, pady = 3)
         self.nextBtn = Button(self.ctrPanel, text='Next >>', width = 10, command = self.nextImage)
@@ -113,7 +122,7 @@ class LabelTool():
         self.disp.pack(side = RIGHT)
 
         self.frame.columnconfigure(1, weight = 1)
-        self.frame.rowconfigure(4, weight = 1)
+        self.frame.rowconfigure(5, weight = 1)
 
         # for debugging
 ##        self.setImage()
@@ -125,14 +134,15 @@ class LabelTool():
             self.parent.focus()
             self.category = int(s)
         else:
-            s = r'D:\Working\Projects\yolo\words'
+            s = r'D:\workspace\python\labelGUI'
             if not os.path.isdir(s):
                 tkinter.messagebox.showerror("Error!", message = "The specified dir doesn't exist!")
                 return
         # get image list
         self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
-        print(self.imageDir)
-        self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPG'))
+        extensions = ("*.jpg", "*.jpeg", "*.JPG", "*.JPEG")
+        for extension in extensions:
+            self.imageList.extend(glob.glob(os.path.join(self.imageDir, extension)))
         if len(self.imageList) == 0:
             print ('No .JPEG images found in the specified dir!')
             return
@@ -140,13 +150,14 @@ class LabelTool():
         # default to the 1st image in the collection
         self.cur = 1
         self.total = len(self.imageList)
-        print(self.total)
 
          # set up output dir
         self.outDir = os.path.join(r'./Labels', '%03d' %(self.category))
-        print(self.outDir)
+        self.xmlDir = os.path.join(r'./AnnotationsXML', '%03d' %(self.category))
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
+        if not os.path.exists(self.xmlDir):
+            os.mkdir(self.xmlDir)
 
         # load example bboxes
         self.egDir = os.path.join(r'./Examples', '%03d' %(1))
@@ -171,8 +182,8 @@ class LabelTool():
 
     def loadImage(self):
         # load image
-        imagepath = self.imageList[self.cur - 1]
-        self.img = Image.open(imagepath)
+        self.imagepath = self.imageList[self.cur - 1]
+        self.img = Image.open(self.imagepath)
         self.tkimg = ImageTk.PhotoImage(self.img)
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
         self.mainPanel.create_image(0, 0, image = self.tkimg, anchor=NW)
@@ -180,10 +191,13 @@ class LabelTool():
 
         # load labels
         self.clearBBox()
-        self.imagename = os.path.split(imagepath)[-1].split('.')[0]
+        self.imagename = os.path.split(self.imagepath)[-1].split('.')[0]
         labelname = self.imagename + '.txt'
+        xmlname = self.imagename + '.xml'
         self.labelfilename = os.path.join(self.outDir, labelname)
+        self.xmlfilename = os.path.join(self.xmlDir, xmlname)
         bbox_cnt = 0
+        counter = 0
         if os.path.exists(self.labelfilename):
             with open(self.labelfilename) as f:
                 for (i, line) in enumerate(f):
@@ -193,21 +207,31 @@ class LabelTool():
                     tmp = [int(t.strip()) for t in line.split()]
 ##                    print tmp
                     self.bboxList.append(tuple(tmp))
+                    counter = counter + 1
                     tmpId = self.mainPanel.create_rectangle(tmp[0], tmp[1], \
                                                             tmp[2], tmp[3], \
                                                             width = 2, \
                                                             outline = COLORS[(len(self.bboxList)-1) % len(COLORS)])
                     self.bboxIdList.append(tmpId)
-                    self.listbox.insert(END, '(%d, %d) -> (%d, %d)' %(tmp[0], tmp[1], tmp[2], tmp[3]))
+                    if self.numbers:
+                        x, y = self.get_text_coordinates(tmp)
+                        textId = self.mainPanel.create_text(x, y, text=str(counter))
+                        self.bboxNumberList.append(textId)
+                        self.listbox.insert(END, '%d: (%d, %d) -> (%d, %d)' %(counter, tmp[0], tmp[1], tmp[2], tmp[3]))
+                    else:
+                        self.listbox.insert(END, '(%d, %d) -> (%d, %d)' %(tmp[0], tmp[1], tmp[2], tmp[3]))
                     self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
+        self.boxcount = counter
 
     def saveImage(self):
         with open(self.labelfilename, 'w') as f:
             f.write('%d\n' %len(self.bboxList))
             for bbox in self.bboxList:
                 f.write(' '.join(map(str, bbox)) + '\n')
+        im = Image.open(self.imagepath)
+        print(os.path.split(self.imagepath)[-1])
+        createXMLAnnotation(os.path.split(self.imagepath)[-1], self.bboxList, im.size, self.xmlfilename,self.category)
         print ('Image No. {0} saved'.format(self.cur))
-
 
     def mouseClick(self, event):
         if self.STATE['click'] == 0:
@@ -218,7 +242,13 @@ class LabelTool():
             self.bboxList.append((x1, y1, x2, y2))
             self.bboxIdList.append(self.bboxId)
             self.bboxId = None
-            self.listbox.insert(END, '(%d, %d) -> (%d, %d)' %(x1, y1, x2, y2))
+            self.boxcount = self.boxcount+1
+            if self.numbers:
+                self.listbox.insert(END, '%d: (%d, %d) -> (%d, %d)' %(self.boxcount, x1, y1, x2, y2))
+                x, y = self.get_text_coordinates([x1, y1, x2, y2])
+                textId = self.mainPanel.create_text(x, y, text=str(self.boxcount))
+            else:
+                self.listbox.insert(END, '(%d, %d) -> (%d, %d)' %(x1, y1, x2, y2))
             self.listbox.itemconfig(len(self.bboxIdList) - 1, fg = COLORS[(len(self.bboxIdList) - 1) % len(COLORS)])
         self.STATE['click'] = 1 - self.STATE['click']
 
@@ -255,6 +285,9 @@ class LabelTool():
         self.bboxIdList.pop(idx)
         self.bboxList.pop(idx)
         self.listbox.delete(idx)
+        if self.numbers:
+            self.mainPanel.delete(self.bboxNumberList[idx])
+            self.bboxNumberList.pop(idx)
 
     def clearBBox(self):
         for idx in range(len(self.bboxIdList)):
@@ -262,6 +295,12 @@ class LabelTool():
         self.listbox.delete(0, len(self.bboxList))
         self.bboxIdList = []
         self.bboxList = []
+        self.bboxNumberList = []
+
+    def toggleNumbers(self):
+        self.numbers = not self.numbers
+        self.saveImage()
+        self.loadImage()
 
     def prevImage(self, event = None):
         self.saveImage()
@@ -281,6 +320,17 @@ class LabelTool():
             self.saveImage()
             self.cur = idx
             self.loadImage()
+
+    def get_text_coordinates(self, tmp):
+        if tmp[1] > 10:
+            y = tmp[1] - 10
+        else:
+            y = tmp[3] + 10
+        if tmp[0] < 5:
+            x = 10
+        else:
+            x = tmp[0]
+        return x, y
 
 ##    def setImage(self, imagepath = r'test2.png'):
 ##        self.img = Image.open(imagepath)
