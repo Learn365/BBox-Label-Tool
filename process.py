@@ -3,11 +3,10 @@ import io
 
 # Current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-obj='nlut_1'
-cls='001'
-img_path = os.path.join(current_dir,obj,'images',cls)
+obj='nlut'
+img_path = os.path.join(current_dir,obj,'dataset')
 # Directory where the data will reside, relative to 'darknet.exe'
-path_data = './data/{0}/images/{1}/'.format(obj,cls)
+path_data = './data/{0}/dataset/'.format(obj)
 
 # Percentage of images to be used for the test set
 percentage_test = 10;

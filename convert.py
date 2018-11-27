@@ -31,11 +31,12 @@ def convert(size, box):
 """-------------------------------------------------------------------""" 
 
 """ Configure Paths"""
-obj='nlut_1'
-cls = "001"
+obj='nlut'
+cls = "005"
 wd = getcwd()
 mypath = os.path.join(wd,"Labels",cls)
-outpath = os.path.join(wd,obj,"labels",cls)
+outpath = os.path.join(wd,obj,"dataset")
+label_path=os.path.join(wd,obj,"annotations")
 
 if cls not in classes:
     exit(0)
@@ -62,6 +63,8 @@ for txt_name in txt_name_list:
     """ Open output text files """
     if not os.path.exists(outpath):
         os.makedirs(outpath)
+    if not os.path.exists(label_path):
+        os.makedirs(label_path)
     txt_outpath = os.path.join(outpath,txt_name)
     print("Output:" + txt_outpath)
     txt_outfile = io.open(txt_outpath, "w",newline='\n')
@@ -84,6 +87,7 @@ for txt_name in txt_name_list:
             ymax = elems[3]
             #
             img_path = str('%s/images/%s/%s.JPG'%(wd, cls, os.path.splitext(txt_name)[0]))
+            xml_path = os.path.join(wd,"AnnotationsXml",str(cls),os.path.splitext(txt_name)[0]+".xml")
             print(img_path)
             #t = magic.from_file(img_path)
             #wh= re.search('(\d+) x (\d+)', t).groups()
@@ -98,11 +102,10 @@ for txt_name in txt_name_list:
             bb = convert((w,h), b)
             print(bb)
             txt_outfile.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
-            new_img_path = os.path.join(wd,obj,"images",cls)
-            if not os.path.exists(new_img_path):
-                os.makedirs(new_img_path)
-            new_img_path = os.path.join(new_img_path,"{0}.jpg".format(os.path.splitext(txt_name)[0]))
+            new_img_path = os.path.join(outpath,"{0}.jpg".format(os.path.splitext(txt_name)[0]))
+            new_xml_path = os.path.join(label_path,"{0}.xml".format(os.path.splitext(txt_name)[0]))
             copyfile(img_path, new_img_path)
+            copyfile(xml_path, new_xml_path)
 
 
     """ Save those images with bb into list"""
